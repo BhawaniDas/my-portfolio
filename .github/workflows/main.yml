@@ -1,0 +1,28 @@
+name: Deploy Portfolio to AWS S3
+
+on:
+  push:
+    branches:
+      - main  # Jab bhi tum main branch par code push karoge, ye pipeline chalegi
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. GitHub se tumhara portfolio code uthane ke liye
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. AWS ke sath login karne ke liye (jo secrets humne abhi banaye, wo yahan use ho rhe hain)
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # Agar AWS par tumhara bucket kisi aur region mein hai, toh usko yahan change kar lena
+
+    # 3. Saari files ko S3 bucket mein sync/upload karne ke liye
+    - name: Deploy files to S3
+      run: |
+        aws s3 sync . s3://bhawani-portfolio --delete --exclude ".git*" --exclude ".github*"
